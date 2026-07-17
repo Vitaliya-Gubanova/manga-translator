@@ -5,32 +5,29 @@
 
 Проект автоматически находит на страницах манги речевые пузыри и текст (YOLOv8), распознаёт текст внутри пузырей (OCR), переводит его на русский язык и позволяет отредактировать перевод перед сохранением готовой картинки.
 
-## Содержание репозитория
+## Структура репозитория
 
 ```
 manga-translator/
 ├── README.md                    # этот файл (отчёт + описание проекта)
-├── weights/
-│   └── best.pt                  # лучшие веса обученной модели YOLOv8n
-├── training/
-│   ├── Yolo_V.ipynb             # код подготовки датасета и обучения YOLO
-│   ├── args.yaml                # полный конфиг обучения (гиперпараметры)
-│   └── metrics/                 # логи и графики обучения
-├── demo/
-│   ├── Manga_otrisovka.ipynb    # код инференса: OCR → перевод → редактор → сохранение
-│   └── demo_images/             # демонстрационные картинки манги (China / Korea)
-├── docs/
-│   └── report_images/           # иллюстрации из отчёта
-└── data/
-    └── README.md                # ссылка на размеченный датасет (Google Drive)
+├── Razmetka_manual/
+│   └── README.md                # ссылка на размеченный датасет Labeling.zip (Google Drive)
+├── Yolo/
+│   ├── README.md                 # ссылка на полную папку с результатами обучения (Google Drive)
+│   ├── Yolo_V.ipynb              # код подготовки датасета и обучения YOLO
+│   ├── best_yolo_model_V.pt      # лучшие веса обученной модели YOLOv8n
+│   └── metrics/                  # логи и графики обучения
+├── Translate/
+│   ├── Manga_otrisovka.ipynb     # код инференса: OCR → перевод → редактор → сохранение
+│   └── MangaLangV.zip            # архив демонстрационных картинок манги (China / Korea)
+└── docs/
+    └── report_images/            # иллюстрации из отчёта
 ```
 
-## Ссылка на датасет
+## Ссылки на большие файлы
 
-Полный размеченный датасет (`Labeling.zip`, ~126 МБ) слишком велик для обычного git-репозитория и вынесен на Google Drive:
-**https://drive.google.com/file/d/1a7WXl_SshpG62kNVQB_fQ_SN-hfJ64pe/view?usp=sharing**
-
-(подробности — в [`data/README.md`](data/README.md))
+- **Датасет с разметкой** (`Labeling.zip`, ~126 МБ): https://drive.google.com/file/d/1a7WXl_SshpG62kNVQB_fQ_SN-hfJ64pe/view?usp=sharing (подробности — [`Razmetka_manual/README.md`](Razmetka_manual/README.md))
+- **Полная папка с результатами обучения** (Google Drive): ссылка будет добавлена в [`Yolo/README.md`](Yolo/README.md)
 
 ---
 
@@ -51,15 +48,15 @@ manga-translator/
   <img src="docs/report_images/image6.jpeg" width="350"/>
 </p>
 
-После того как разметка была закончена, две папки — `converted_images` и `labels` — были упакованы в zip-архив `Labeling.zip`.
+После того как разметка была закончена, две папки — `converted_images` и `labels` — были упакованы в zip-архив `Labeling.zip` (см. [`Razmetka_manual`](Razmetka_manual)).
 
-Далее был создан код `Yolo_V.ipynb` для обучения модели YOLO на размеченных данных. Архив с рисунками и разметкой `Labeling.zip` нужно разместить в `/content/drive/MyDrive/Labeling.zip`. Для доступа к данному архиву в начале кода нужно подмонтировать `/content/drive`.
+Далее был создан код [`Yolo/Yolo_V.ipynb`](Yolo/Yolo_V.ipynb) для обучения модели YOLO на размеченных данных. Архив с рисунками и разметкой `Labeling.zip` нужно разместить в `/content/drive/MyDrive/Labeling.zip`. Для доступа к данному архиву в начале кода нужно подмонтировать `/content/drive`.
 
 Обучение проводилось на GPU с батчем 16 примерно полчаса. В ходе обучения выводятся метрики на всех 80 эпохах.
 
 <p><img src="docs/report_images/image7.jpeg" width="700"/></p>
 
-Также сохраняется лучшая модель и последняя — `/content/runs/detect/yolo_runs/bubbles_text/weights/best.pt` и `/content/runs/detect/yolo_runs/bubbles_text/weights/last.pt`. Кроме того, лучшая модель сохраняется и в `/content/drive/MyDrive/best_yolo_model_V.pt`. Метрики и графики, полученные в ходе обучения, сохраняются в `/content/runs/detect/yolo_runs/bubbles_text/weights/`.
+Также сохраняется лучшая модель и последняя — `/content/runs/detect/yolo_runs/bubbles_text/weights/best.pt` и `/content/runs/detect/yolo_runs/bubbles_text/weights/last.pt`. Кроме того, лучшая модель сохраняется и в `/content/drive/MyDrive/best_yolo_model_V.pt` (именно этот файл лежит в [`Yolo/best_yolo_model_V.pt`](Yolo/best_yolo_model_V.pt)). Метрики и графики, полученные в ходе обучения, сохраняются в `/content/runs/detect/yolo_runs/bubbles_text/weights/` (в этом репозитории — [`Yolo/metrics/`](Yolo/metrics/)).
 
 **Метрики итоговой модели (на валидации):**
 
@@ -73,9 +70,11 @@ manga-translator/
 - Precision (все классы) = **0.99** при confidence ≈ 0.899
 - Recall (все классы) = **0.98** при confidence ≈ 0.000
 
-Графики и confusion matrix — в [`training/metrics/`](training/metrics/): `results.png`, `BoxPR_curve.png`, `BoxF1_curve.png`, `BoxP_curve.png`, `BoxR_curve.png`, `confusion_matrix.png`, `confusion_matrix_normalized.png`, `labels.jpg`, `results.csv`.
+Графики и confusion matrix — в [`Yolo/metrics/`](Yolo/metrics/): `results.png`, `BoxPR_curve.png`, `BoxF1_curve.png`, `BoxP_curve.png`, `BoxR_curve.png`, `confusion_matrix.png`, `confusion_matrix_normalized.png`, `labels.jpg`, `results.csv`.
 
-Далее был создан код `Manga_otrisovka.ipynb`. Для работы этого кода нужна сохранённая в `/content/drive/MyDrive/best_yolo_model_V.pt` лучшая обученная YOLO-модель. И, кроме того, нужен также архив zip `MangaLangV`, который нужно расположить в `/content/drive/MyDrive/MangaLangV.zip`. Данный архив имеет структуру — `MangaLangV/MangaLang` и далее две папки — `China` и `Korea`. В этих папках находятся демонстрационные jpeg-картинки. В `China` — 5 картинок с мангой на китайском горизонтальном, а в `Korea` — 6 картинок в jpeg-формате с мангой на корейском языке. После запуска кода необходимо подтвердить доступ к Google MyDrive, и после этого появится строка, в которой надо ввести язык: 0 — Chinese (Simplified) или 1 — Korean. Нужно ввести 0 или 1 в строке и нажать Enter.
+По итогам обучения сохраняются: лучшая модель — `best_yolo_model_V.pt` (используется в этом репозитории) и последняя эпоха — `last_yolo_model_V.pt` (в репозиторий не включена).
+
+Далее был создан код — [`Translate/Manga_otrisovka.ipynb`](Translate/Manga_otrisovka.ipynb). Для работы этого кода нужна сохранённая в `/content/drive/MyDrive/best_yolo_model_V.pt` лучшая обученная YOLO-модель. И, кроме того, нужен также архив zip `MangaLangV`, который нужно расположить в `/content/drive/MyDrive/MangaLangV.zip` (в этом репозитории — [`Translate/MangaLangV.zip`](Translate/MangaLangV.zip)). При запуске код распаковывает архив в `/content/MangaLang`, а сами демонстрационные картинки лежат в `/content/MangaLang/MangaLang/China` и `/content/MangaLang/MangaLang/Korea`. В `China` — 5 картинок с мангой на китайском горизонтальном, а в `Korea` — 6 картинок в jpeg-формате с мангой на корейском языке. После запуска кода необходимо подтвердить доступ к Google MyDrive, и после этого появится строка, в которой надо ввести язык: 0 — Chinese (Simplified) или 1 — Korean. Нужно ввести 0 или 1 в строке и нажать Enter.
 
 <p><img src="docs/report_images/image8.jpeg" width="300"/></p>
 
@@ -123,8 +122,8 @@ manga-translator/
 
 ## Как воспроизвести
 
-1. Скачать датасет по ссылке выше, положить в `/content/drive/MyDrive/Labeling.zip` (Google Colab).
-2. Запустить `training/Yolo_V.ipynb` — обучится модель, веса появятся в `/content/runs/detect/yolo_runs/bubbles_text/weights/best.pt`.
-3. Для демонстрации инференса — запустить `demo/Manga_otrisovka.ipynb`, указав путь к `best.pt` и к папке с демо-картинками (`demo/demo_images`, либо `MangaLangV.zip` на Google Drive, как в оригинальном коде).
+1. Скачать датасет по ссылке из [`Razmetka_manual/README.md`](Razmetka_manual/README.md), положить в `/content/drive/MyDrive/Labeling.zip` (Google Colab).
+2. Запустить [`Yolo/Yolo_V.ipynb`](Yolo/Yolo_V.ipynb) — обучится модель, веса появятся в `/content/runs/detect/yolo_runs/bubbles_text/weights/best.pt` и будут скопированы в Google Drive как `best_yolo_model_V.pt`.
+3. Для демонстрации инференса — запустить [`Translate/Manga_otrisovka.ipynb`](Translate/Manga_otrisovka.ipynb), указав путь к `best_yolo_model_V.pt` и к архиву `MangaLangV.zip` с демо-картинками.
 
-> Повторное обучение не обязательно — в репозитории уже лежат готовые веса (`weights/best.pt`) и все метрики/графики обучения для ознакомления.
+> Повторное обучение не обязательно — в репозитории уже лежат готовые веса ([`Yolo/best_yolo_model_V.pt`](Yolo/best_yolo_model_V.pt)) и все метрики/графики обучения ([`Yolo/metrics/`](Yolo/metrics/)) для ознакомления.
